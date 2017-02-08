@@ -111,7 +111,7 @@ deis-create:
 	${DEIS_BIN} apps | grep -q ${DEIS_APP}
 
 deis-config:
-	DEIS_PROFILE=${DEIS_PROFILE} ${DEIS_BIN} config:push -p .env-dist -a ${DEIS_APP}
+	DEIS_PROFILE=${DEIS_PROFILE} ${DEIS_BIN} config:set -a ${DEIS_APP} $(shell cat .env-dist) 
 
 deis-create-and-or-config:
 	make deis-create || echo already created
