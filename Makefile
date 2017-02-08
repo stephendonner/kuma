@@ -116,7 +116,7 @@ deis-config:
 deis-create-and-or-config:
 	make deis-create || echo already created
 	sleep 5
-	make deis-config
+	make deis-config || echo already configured
 
 deis-pull:
 	DEIS_PROFILE=${DEIS_PROFILE} ${DEIS_BIN} pull ${KUMA_IMAGE} -a ${DEIS_APP}
