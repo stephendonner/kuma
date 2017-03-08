@@ -354,3 +354,55 @@ You can deploy a hosted demo instance of Kuma by following these steps:
 
 #. Mozilla SRE's will periodically remove old instances
 
+
+Maintenance Mode
+------------
+Maintenance mode is a special configuration for running Kuma in read-only mode,
+where all operations that would write to the database are blocked. As the name
+suggests, it's intended for those times when we'd like to continue to serve
+documents from a read-only copy of the database, while performing maintenance
+on the master database.
+
+For local Docker-based development in maintenance mode:
+
+#. If you haven't already, create a read-only user for your local MySQL
+   database::
+
+    docker-compose up -d
+    docker-compose exec web mysql -h mysql -u root -p
+    (when prompted for the password, enter "kuma")
+    mysql> source ./scripts/create_read_only_user.sql
+    mysql> quit
+
+#. Create a ``.env`` file in the repository root directory, and add these
+   settings::
+
+    MAINTENANCE_MODE=True
+    DATABASE_USER=kuma_ro
+
+   Using a read-only database user is not required in maintenance mode. You can run
+   in maintenance mode just fine with only this setting::
+
+    MAINTENANCE_MODE=True
+
+   and going with a database user that has write privileges. The read-only database
+   user simply provides a level of safety as well as notification (for example, an
+   exception will be raised if an attempt to write the database slips through).
+
+#. If you were already running your local Docker instance, you need to bring it
+   down hard and start again::
+
+    docker-compose down
+    docker-compose up -d
+
+#. You may need to recompile your static assets and then restart::
+
+    docker-compose exec web make build-static
+    docker-compose restart
+
+You should be good to go!
+
+There is a set of integration tests for maintenance mode. To run them against
+your local Docker-based Kuma::
+
+    py.test -m maintenance_mode tests/functional --base-url http://localhost:8000 --driver Chrome --driver-path /path/to/chromedriver
