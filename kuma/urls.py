@@ -1,8 +1,8 @@
 from django.conf import settings
 from django.conf.urls import include, url
 from django.contrib import admin
-from django.shortcuts import redirect
 from django.views.static import serve
+from django.views.generic import RedirectView
 
 from kuma.attachments import views as attachment_views
 from kuma.core import views as core_views
@@ -19,14 +19,13 @@ handler500 = core_views.handler500
 urlpatterns = [
     url('', include('kuma.landing.urls')),
     url(r'^events',
-        lambda x: redirect('https://mozilla.org/contribute/events'),
+        RedirectView.as_view(url='https://mozilla.org/contribute/events'),
         name='events'),
-
 ]
 
 if settings.MAINTENANCE_MODE:
     urlpatterns.append(
-        url(r'^admin/.*', lambda x: redirect('maintenance_mode'))
+        url(r'^admin/.*', RedirectView.as_view(pattern_name='maintenance_mode'))
     )
 else:
     urlpatterns += [
@@ -48,7 +47,8 @@ urlpatterns += [
 if settings.MAINTENANCE_MODE:
     urlpatterns.append(
         # Redirect if we try to use the "tidings" unsubscribe.
-        url(r'^unsubscribe/.*', lambda x: redirect('maintenance_mode'))
+        url(r'^unsubscribe/.*',
+            RedirectView.as_view(pattern_name='maintenance_mode'))
     )
 else:
     urlpatterns.append(
